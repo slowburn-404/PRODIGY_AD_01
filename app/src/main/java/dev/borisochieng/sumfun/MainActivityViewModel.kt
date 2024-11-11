@@ -13,10 +13,10 @@ import kotlinx.coroutines.launch
 
 class MainActivityViewModel : ViewModel() {
 
-    private val _calculatorResult: MutableStateFlow<CalculatorResult> =
-        MutableStateFlow(CalculatorResult())
-    val calculatorResult: StateFlow<CalculatorResult> =
-        _calculatorResult.asStateFlow() //expose as read only
+    private val _calculatorState: MutableStateFlow<CalculatorState> =
+        MutableStateFlow(CalculatorState())
+    val calculatorState: StateFlow<CalculatorState> =
+        _calculatorState.asStateFlow() //expose as read only
 
     private val _calculatorEvents: MutableSharedFlow<CalculatorEvents> = MutableSharedFlow()
     val calculatorEvents: SharedFlow<CalculatorEvents> =
@@ -29,56 +29,99 @@ class MainActivityViewModel : ViewModel() {
                 is CalculatorEvents.Divide -> divide(calculatorEvent.numbers)
                 is CalculatorEvents.Multiply -> multiply(calculatorEvent.numbers)
                 is CalculatorEvents.Subtract -> subtract(calculatorEvent.numbers)
+                is CalculatorEvents.EnterNumber -> enterNumber(calculatorEvent.number)
+                is CalculatorEvents.EnterDecimal -> {}
+                is CalculatorEvents.Clear -> clear()
+                is CalculatorEvents.Delete -> delete()
             }
         }
 
+    private fun clear() {
+        _calculatorState.update { state ->
+            state.copy(
+                numbersInput = emptyList()
+            )
+        }
+    }
+
+    private fun delete() {
+
+        _calculatorState.update { state ->
+            //delete each item from the list backwards
+            state.copy(
+                numbersInput = state.numbersInput.dropLast(state.numbersInput.size - 1)
+            )
+        }
+    }
+
+    private fun enterNumber(number: Number) {
+        val numbersInput = mutableListOf<Number>()
+        numbersInput.add(number)
+        _calculatorState.update { state ->
+            state.copy(
+                numbersInput = numbersInput
+            )
+        }
+    }
+
     private fun add(numbers: List<Number>) {
-        val sum = performTypedOperation(numbers) { num1, num2 ->
+        val sum = performArithmeticOperation(numbers) { num1, num2 ->
             num1.toDouble() + num2.toDouble()
         }
-        _calculatorResult.update { result ->
-            result.copy(
-                sum = sum
-            )
+        sum?.let {
+            _calculatorState.update { result ->
+                result.copy(
+                    result = it
+                )
+            }
         }
     }
 
 
     private fun subtract(numbers: List<Number>) {
         val difference =
-            performTypedOperation(numbers) { num1, num2 -> num1.toDouble() - num2.toDouble() }
-        _calculatorResult.update { result ->
-            result.copy(
-                difference = difference
-            )
+            performArithmeticOperation(numbers) { num1, num2 -> num1.toDouble() - num2.toDouble() }
+
+        difference?.let {
+            _calculatorState.update { result ->
+                result.copy(
+                    result = it
+                )
+            }
         }
     }
 
 
     private fun divide(numbers: List<Number>) {
         val dividend =
-            performTypedOperation(numbers) { num1, num2 -> num1.toDouble() / num2.toDouble() }
-        _calculatorResult.update { result ->
-            result.copy(
-                division = dividend
-            )
+            performArithmeticOperation(numbers) { num1, num2 -> num1.toDouble() / num2.toDouble() }
+
+        dividend?.let {
+            _calculatorState.update { result ->
+                result.copy(
+                    result = it
+                )
+            }
         }
     }
 
 
     private fun multiply(numbers: List<Number>) {
         val product =
-            performTypedOperation(numbers) { num1, num2 -> num1.toDouble() * num2.toDouble() }
-        _calculatorResult.update { result ->
-            result.copy(
-                product = product
-            )
+            performArithmeticOperation(numbers) { num1, num2 -> num1.toDouble() * num2.toDouble() }
+
+        product?.let {
+            _calculatorState.update { result ->
+                result.copy(
+                    result = it
+                )
+            }
         }
     }
 
-    private fun performTypedOperation(
+    private fun performArithmeticOperation(
         numbers: List<Number>?,
-        operation: (Number, Number) -> Double
+        operation: (Number, Number) -> Number
     ): Number? {
         if (numbers.isNullOrEmpty()) return null
         /*

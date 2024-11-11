@@ -8,7 +8,6 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.Test
-
 import org.junit.Assert.*
 import org.junit.Before
 
@@ -20,7 +19,7 @@ import org.junit.Before
 class MainActivityViewModelTest {
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var viewModel: MainActivityViewModel
-    val numbers = getNumbers()
+    private val numbers = getNumbers()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Before
@@ -35,7 +34,7 @@ class MainActivityViewModelTest {
         viewModel.listenForUiEvents(CalculatorEvents.Add(numbers))
         //run all coroutines on the scheduler until there is nothing left to queue
         advanceUntilIdle()
-        val updatedSum = viewModel.calculatorResult.value.sum
+        val updatedSum = viewModel.calculatorState.value.result
 
         assertEquals(EXPECTED_SUM, updatedSum)
     }
@@ -45,7 +44,7 @@ class MainActivityViewModelTest {
     fun mainActivityViewModel_Subtraction_isCorrect_DifferenceUpdatedErrorFlagUnset() = runTest(testDispatcher) {
         viewModel.listenForUiEvents(CalculatorEvents.Subtract(numbers))
         advanceUntilIdle()
-        val updatedDifference = viewModel.calculatorResult.value.difference
+        val updatedDifference = viewModel.calculatorState.value.result
         assertEquals(EXPECTED_DIFFERENCE, updatedDifference)
 
     }
@@ -55,7 +54,7 @@ class MainActivityViewModelTest {
     fun mainActivityViewModel_Multiplication_isCorrect_ProductUpdatedErrorFlagUnset() = runTest(testDispatcher) {
         viewModel.listenForUiEvents(CalculatorEvents.Multiply(numbers))
         advanceUntilIdle()
-        val updatedProduct = viewModel.calculatorResult.value.product
+        val updatedProduct = viewModel.calculatorState.value.result
         assertEquals(EXPECTED_PRODUCT, updatedProduct)
     }
 
@@ -64,7 +63,7 @@ class MainActivityViewModelTest {
     fun mainActivityViewModel_Division_isCorrect_DividendUpdatedErrorFlagUnset() = runTest(testDispatcher) {
         viewModel.listenForUiEvents(CalculatorEvents.Divide(numbers))
         advanceUntilIdle()
-        val updatedDividend = viewModel.calculatorResult.value.division
+        val updatedDividend = viewModel.calculatorState.value.result
         assertEquals(EXPECTED_DIVIDEND, updatedDividend)
 
     }
