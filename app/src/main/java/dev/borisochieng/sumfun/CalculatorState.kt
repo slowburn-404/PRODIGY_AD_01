@@ -7,5 +7,6 @@ import androidx.compose.runtime.Stable
 @Stable
 data class CalculatorState(
     val numbersInput: List<Number> = emptyList(),
-    val result: Number = 0
+    val result: Number = 0,
+    val currentNumberInput: String = ""
 )

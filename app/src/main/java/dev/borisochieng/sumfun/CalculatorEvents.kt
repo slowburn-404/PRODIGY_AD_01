@@ -2,7 +2,7 @@ package dev.borisochieng.sumfun
 
 sealed class CalculatorEvents {
 
-    data class Add(val numbers: List<Number>): CalculatorEvents()
+    data object Add: CalculatorEvents()
 
     data class Subtract(val numbers: List<Number>): CalculatorEvents()
 
@@ -10,7 +10,7 @@ sealed class CalculatorEvents {
 
     data class Multiply(val numbers: List<Number>): CalculatorEvents()
 
-    data class EnterNumber(val number: Number): CalculatorEvents()
+    data class EnterNumber(val digit: Int): CalculatorEvents()
 
     data object EnterDecimal: CalculatorEvents()
 

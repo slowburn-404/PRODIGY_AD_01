@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,12 +46,14 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             SumFunTheme {
-                val mainActivityViewModel =  viewModel<MainActivityViewModel>()
-                val calculatorState = mainActivityViewModel.calculatorState.collectAsStateWithLifecycle()
+                val mainActivityViewModel = viewModel<MainActivityViewModel>()
+                val calculatorState =
+                    mainActivityViewModel.calculatorState.collectAsStateWithLifecycle()
 
-                Scaffold(modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.LightGray)
+                Scaffold(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.LightGray)
                 ) { innerPadding ->
                     MainScreenLayout(
                         modifier = Modifier
@@ -86,11 +89,25 @@ fun MainScreenLayout(
             Text(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
-                text = "${state.value.result}",
+                    .padding(horizontal = 16.dp),
+                text = state.value.currentNumberInput,
+                style = TextStyle(
+                    color = Color.LightGray,
+                    fontWeight = FontWeight.Medium,
+                    textAlign = TextAlign.End,
+                    fontSize = 24.sp
+                ),
+                maxLines = 2,
+            )
+
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                text = "= ${state.value.result}",
                 style = TextStyle(
                     color = Color.Black,
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Black,
                     textAlign = TextAlign.End,
                     fontSize = 36.sp
                 ),
@@ -125,12 +142,12 @@ fun MainScreenLayout(
                         disabledContainerColor = Color.LightGray
                     )
                 ) {
-                        Icon(
-                            modifier = Modifier
-                                .size(50.dp),
-                            painter = painterResource(R.drawable.delete),
-                            contentDescription = "Delete"
-                        )
+                    Icon(
+                        modifier = Modifier
+                            .size(50.dp),
+                        painter = painterResource(R.drawable.delete),
+                        contentDescription = "Delete"
+                    )
 
                 }
 
@@ -147,13 +164,13 @@ fun MainScreenLayout(
                         disabledContainerColor = Color.LightGray
                     )
                 ) {
-                        Icon(
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .size(50.dp),
-                            painter = painterResource(R.drawable.multiply),
-                            contentDescription = "Multiply"
-                        )
+                    Icon(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .size(50.dp),
+                        painter = painterResource(R.drawable.multiply),
+                        contentDescription = "Multiply"
+                    )
 
                 }
             }
@@ -294,7 +311,7 @@ fun MainScreenLayout(
                     modifier = Modifier
                         .weight(1f),
                     onClick = {
-                        viewModel.listenForUiEvents(CalculatorEvents.Add(state.value.numbersInput))
+                        viewModel.listenForUiEvents(CalculatorEvents.Add)
                     },
                     colors = IconButtonColors(
                         contentColor = Color.Black,
@@ -338,6 +355,7 @@ fun MainScreenLayout(
                 CalculatorButton(
                     symbol = "=",
                     onClick = {
+                        //TODO show total
                         viewModel.listenForUiEvents(CalculatorEvents.EnterDecimal)
                     },
                     modifier = Modifier

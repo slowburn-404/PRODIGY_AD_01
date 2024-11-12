@@ -25,12 +25,12 @@ class MainActivityViewModel : ViewModel() {
     fun listenForUiEvents(calculatorEvent: CalculatorEvents) =
         viewModelScope.launch {
             when (calculatorEvent) {
-                is CalculatorEvents.Add -> add(calculatorEvent.numbers)
+                is CalculatorEvents.Add -> add()
                 is CalculatorEvents.Divide -> divide(calculatorEvent.numbers)
                 is CalculatorEvents.Multiply -> multiply(calculatorEvent.numbers)
                 is CalculatorEvents.Subtract -> subtract(calculatorEvent.numbers)
-                is CalculatorEvents.EnterNumber -> enterNumber(calculatorEvent.number)
-                is CalculatorEvents.EnterDecimal -> {}
+                is CalculatorEvents.EnterNumber -> enterNumber(calculatorEvent.digit)
+                is CalculatorEvents.EnterDecimal -> enterDecimal()
                 is CalculatorEvents.Clear -> clear()
                 is CalculatorEvents.Delete -> delete()
             }
@@ -39,7 +39,9 @@ class MainActivityViewModel : ViewModel() {
     private fun clear() {
         _calculatorState.update { state ->
             state.copy(
-                numbersInput = emptyList()
+                numbersInput = emptyList(),
+                currentNumberInput = "",
+                result = 0
             )
         }
     }
@@ -49,23 +51,47 @@ class MainActivityViewModel : ViewModel() {
         _calculatorState.update { state ->
             //delete each item from the list backwards
             state.copy(
-                numbersInput = state.numbersInput.dropLast(state.numbersInput.size - 1)
+                currentNumberInput = state.currentNumberInput.dropLast(1)
             )
         }
     }
 
-    private fun enterNumber(number: Number) {
-        val numbersInput = mutableListOf<Number>()
-        numbersInput.add(number)
+    private fun enterNumber(digit: Int) {
         _calculatorState.update { state ->
+            val updatedInput = state.currentNumberInput + digit.toString()
             state.copy(
-                numbersInput = numbersInput
+                currentNumberInput = updatedInput
             )
         }
     }
 
-    private fun add(numbers: List<Number>) {
-        val sum = performArithmeticOperation(numbers) { num1, num2 ->
+    private fun enterDecimal() {
+        _calculatorState.update { state ->
+            val hasDecimal = state.currentNumberInput.contains(".")
+            if (!hasDecimal) {
+                val updatedInput = state.currentNumberInput + "."
+                state.copy(
+                    currentNumberInput = updatedInput
+                )
+            } else {
+                state
+            }
+
+        }
+    }
+
+    private fun add() {
+        val state = _calculatorState.value
+        val currentInputAsNumber = state.currentNumberInput.trimEnd('+').toDoubleOrNull() ?: return
+
+        val updatedNumbers = state.numbersInput + currentInputAsNumber
+        _calculatorState.update {
+            it.copy(
+                numbersInput = updatedNumbers,
+                currentNumberInput = state.currentNumberInput + "+"
+            )
+        }
+        val sum = performArithmeticOperation(updatedNumbers) { num1, num2 ->
             num1.toDouble() + num2.toDouble()
         }
         sum?.let {
