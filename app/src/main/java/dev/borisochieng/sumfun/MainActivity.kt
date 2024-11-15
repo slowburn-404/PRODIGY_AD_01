@@ -5,7 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -90,7 +89,7 @@ fun MainScreenLayout(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
-                text = state.value.currentNumberInput,
+                text = state.value.expression,
                 style = TextStyle(
                     color = Color.LightGray,
                     fontWeight = FontWeight.Medium,
@@ -155,7 +154,7 @@ fun MainScreenLayout(
                     modifier = Modifier
                         .weight(1f),
                     onClick = {
-                        viewModel.listenForUiEvents(CalculatorEvents.Multiply(state.value.numbersInput))
+                        viewModel.listenForUiEvents(CalculatorEvents.Multiply)
                     },
                     colors = IconButtonColors(
                         contentColor = Color.Black,
@@ -208,7 +207,7 @@ fun MainScreenLayout(
                     modifier = Modifier
                         .weight(1f),
                     onClick = {
-                        viewModel.listenForUiEvents(CalculatorEvents.Divide(state.value.numbersInput))
+                        viewModel.listenForUiEvents(CalculatorEvents.Divide)
                     },
                     colors = IconButtonColors(
                         contentColor = Color.Black,
@@ -261,7 +260,7 @@ fun MainScreenLayout(
                     modifier = Modifier
                         .weight(1f),
                     onClick = {
-                        viewModel.listenForUiEvents(CalculatorEvents.Subtract(state.value.numbersInput))
+                        viewModel.listenForUiEvents(CalculatorEvents.Subtract)
                     },
                     colors = IconButtonColors(
                         contentColor = Color.Black,
@@ -296,14 +295,16 @@ fun MainScreenLayout(
                 CalculatorButton(
                     symbol = "2",
                     onClick = {
-                        viewModel.listenForUiEvents(CalculatorEvents.EnterNumber(0))
+                        viewModel.listenForUiEvents(CalculatorEvents.EnterNumber(2))
                     },
                     modifier = Modifier
                         .weight(1f)
                 )
                 CalculatorButton(
                     symbol = "3",
-                    onClick = {},
+                    onClick = {
+                        viewModel.listenForUiEvents(CalculatorEvents.EnterNumber(3))
+                    },
                     modifier = Modifier
                         .weight(1f)
                 )
@@ -356,7 +357,7 @@ fun MainScreenLayout(
                     symbol = "=",
                     onClick = {
                         //TODO show total
-                        viewModel.listenForUiEvents(CalculatorEvents.EnterDecimal)
+                        //viewModel.listenForUiEvents(CalculatorEvents.EnterDecimal)
                     },
                     modifier = Modifier
                         .weight(2f),

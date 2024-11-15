@@ -30,43 +30,99 @@ class MainActivityViewModelTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-   internal fun mainActivityViewModel_Addition_isCorrect_SumUpdatedErrorFlagUnset()  =  runTest(testDispatcher) {
-        viewModel.listenForUiEvents(CalculatorEvents.Add(numbers))
-        //run all coroutines on the scheduler until there is nothing left to queue
-        advanceUntilIdle()
-        val updatedSum = viewModel.calculatorState.value.result
+    internal fun mainActivityViewModel_Addition_isCorrect_SumUpdatedErrorFlagUnset() =
+        runTest(testDispatcher) {
 
-        assertEquals(EXPECTED_SUM, updatedSum)
-    }
+            viewModel.listenForUiEvents(CalculatorEvents.EnterNumber(33))
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    @Test
-    fun mainActivityViewModel_Subtraction_isCorrect_DifferenceUpdatedErrorFlagUnset() = runTest(testDispatcher) {
-        viewModel.listenForUiEvents(CalculatorEvents.Subtract(numbers))
-        advanceUntilIdle()
-        val updatedDifference = viewModel.calculatorState.value.result
-        assertEquals(EXPECTED_DIFFERENCE, updatedDifference)
+            viewModel.listenForUiEvents(CalculatorEvents.Add)
 
-    }
+            viewModel.listenForUiEvents(CalculatorEvents.EnterNumber(5))
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    @Test
-    fun mainActivityViewModel_Multiplication_isCorrect_ProductUpdatedErrorFlagUnset() = runTest(testDispatcher) {
-        viewModel.listenForUiEvents(CalculatorEvents.Multiply(numbers))
-        advanceUntilIdle()
-        val updatedProduct = viewModel.calculatorState.value.result
-        assertEquals(EXPECTED_PRODUCT, updatedProduct)
-    }
+            viewModel.listenForUiEvents(CalculatorEvents.EnterDecimal)
+
+            viewModel.listenForUiEvents(CalculatorEvents.EnterNumber(6))
+
+            viewModel.listenForUiEvents(CalculatorEvents.Add)
+
+            //run all coroutines on the scheduler until there is nothing left to queue
+            advanceUntilIdle()
+
+            //assert that currentNumberInput is updated with "+"
+            assertEquals("33.0+5.6", viewModel.calculatorState.value.expression)
+
+            //assert that result is updated correctly (3.0 + 5.0 = 8.0)
+            assertEquals(38.6, viewModel.calculatorState.value.result)
+        }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun mainActivityViewModel_Division_isCorrect_DividendUpdatedErrorFlagUnset() = runTest(testDispatcher) {
-        viewModel.listenForUiEvents(CalculatorEvents.Divide(numbers))
-        advanceUntilIdle()
-        val updatedDividend = viewModel.calculatorState.value.result
-        assertEquals(EXPECTED_DIVIDEND, updatedDividend)
+    fun mainActivityViewModel_Subtraction_isCorrect_DifferenceUpdatedErrorFlagUnset() =
+        runTest(testDispatcher) {
+            viewModel.listenForUiEvents(CalculatorEvents.EnterNumber(1))
 
-    }
+            viewModel.listenForUiEvents(CalculatorEvents.EnterNumber(0))
+
+            viewModel.listenForUiEvents(CalculatorEvents.Subtract)
+
+            viewModel.listenForUiEvents(CalculatorEvents.EnterNumber(5))
+
+            viewModel.listenForUiEvents(CalculatorEvents.EnterDecimal)
+
+            viewModel.listenForUiEvents(CalculatorEvents.EnterNumber(5))
+
+            viewModel.listenForUiEvents(CalculatorEvents.Subtract)
+
+
+            advanceUntilIdle()
+
+            //assert that expression has been built (5 - 5.5 -)
+
+            assertEquals("10-5.5-", viewModel.calculatorState.value.expression)
+            
+            //assert that subtraction is correct
+
+            assertEquals(5.5, viewModel.calculatorState.value.result)
+
+        }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun mainActivityViewModel_Multiplication_isCorrect_ProductUpdatedErrorFlagUnset() =
+        runTest(testDispatcher) {
+            viewModel.listenForUiEvents(CalculatorEvents.EnterNumber(1))
+            
+            viewModel.listenForUiEvents(CalculatorEvents.EnterNumber(0))
+            
+            viewModel.listenForUiEvents(CalculatorEvents.Multiply)
+            
+            viewModel.listenForUiEvents(CalculatorEvents.EnterNumber(1))
+            
+            viewModel.listenForUiEvents(CalculatorEvents.EnterNumber(0))
+            
+            viewModel.listenForUiEvents(CalculatorEvents.Multiply)
+            
+            advanceUntilIdle()
+
+            //assert that expression has been built (10×10×)
+
+            assertEquals("10×10×", viewModel.calculatorState.value.expression)
+
+            //assert that multiplication is correct
+
+            assertEquals(100, viewModel.calculatorState.value.result)
+        }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun mainActivityViewModel_Division_isCorrect_DividendUpdatedErrorFlagUnset() =
+        runTest(testDispatcher) {
+            viewModel.listenForUiEvents(CalculatorEvents.Divide)
+            advanceUntilIdle()
+            val updatedDividend = viewModel.calculatorState.value.result
+            assertEquals(EXPECTED_DIVIDEND, updatedDividend)
+
+        }
 
     companion object {
         private const val EXPECTED_SUM = 1000047.07518948

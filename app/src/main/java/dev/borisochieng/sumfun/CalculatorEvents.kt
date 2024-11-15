@@ -4,11 +4,11 @@ sealed class CalculatorEvents {
 
     data object Add: CalculatorEvents()
 
-    data class Subtract(val numbers: List<Number>): CalculatorEvents()
+    data object Subtract : CalculatorEvents()
 
-    data class Divide(val numbers: List<Number>): CalculatorEvents()
+    data object Divide : CalculatorEvents()
 
-    data class Multiply(val numbers: List<Number>): CalculatorEvents()
+    data object Multiply : CalculatorEvents()
 
     data class EnterNumber(val digit: Int): CalculatorEvents()
 

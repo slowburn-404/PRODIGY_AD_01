@@ -26,9 +26,9 @@ class MainActivityViewModel : ViewModel() {
         viewModelScope.launch {
             when (calculatorEvent) {
                 is CalculatorEvents.Add -> add()
-                is CalculatorEvents.Divide -> divide(calculatorEvent.numbers)
-                is CalculatorEvents.Multiply -> multiply(calculatorEvent.numbers)
-                is CalculatorEvents.Subtract -> subtract(calculatorEvent.numbers)
+                is CalculatorEvents.Divide -> divide()
+                is CalculatorEvents.Multiply -> multiply()
+                is CalculatorEvents.Subtract -> subtract()
                 is CalculatorEvents.EnterNumber -> enterNumber(calculatorEvent.digit)
                 is CalculatorEvents.EnterDecimal -> enterDecimal()
                 is CalculatorEvents.Clear -> clear()
@@ -39,8 +39,7 @@ class MainActivityViewModel : ViewModel() {
     private fun clear() {
         _calculatorState.update { state ->
             state.copy(
-                numbersInput = emptyList(),
-                currentNumberInput = "",
+                expression = "",
                 result = 0
             )
         }
@@ -49,112 +48,152 @@ class MainActivityViewModel : ViewModel() {
     private fun delete() {
 
         _calculatorState.update { state ->
-            //delete each item from the list backwards
+            //delete each item from the string backwards
             state.copy(
-                currentNumberInput = state.currentNumberInput.dropLast(1)
+                expression = state.expression.dropLast(1)
             )
         }
     }
 
     private fun enterNumber(digit: Int) {
         _calculatorState.update { state ->
-            val updatedInput = state.currentNumberInput + digit.toString()
+            val updatedInput = state.expression + digit.toString()
+
             state.copy(
-                currentNumberInput = updatedInput
+                expression = updatedInput
             )
         }
     }
 
     private fun enterDecimal() {
         _calculatorState.update { state ->
-            val hasDecimal = state.currentNumberInput.contains(".")
-            if (!hasDecimal) {
-                val updatedInput = state.currentNumberInput + "."
-                state.copy(
-                    currentNumberInput = updatedInput
-                )
-            } else {
-                state
-            }
+            state.copy(
+                expression = state.expression + "."
+            )
 
         }
     }
 
     private fun add() {
         val state = _calculatorState.value
-        val currentInputAsNumber = state.currentNumberInput.trimEnd('+').toDoubleOrNull() ?: return
 
-        val updatedNumbers = state.numbersInput + currentInputAsNumber
-        _calculatorState.update {
-            it.copy(
-                numbersInput = updatedNumbers,
-                currentNumberInput = state.currentNumberInput + "+"
+        val lastNumber = state.expression
+            .trimEnd('+', '-', '×', '÷')
+            .split("+")
+            .lastOrNull()
+            ?.toDoubleOrNull() ?: return // return early if input is invalid
+
+        if(state.expression.endsWith('+')) return
+
+        val currentSum = performArithmeticOperation(
+            num1 = state.result,
+            num2 = lastNumber,
+            operation = CalculatorOperation.Add
+        )
+
+        _calculatorState.update { currentState ->
+            currentState.copy(
+                expression = "$currentSum+",
+                result = currentSum
             )
         }
-        val sum = performArithmeticOperation(updatedNumbers) { num1, num2 ->
-            num1.toDouble() + num2.toDouble()
+    }
+
+
+    private fun subtract() {
+        val state = _calculatorState.value
+
+        val lastNumber = state.expression
+            .trimEnd('+', '-', '×', '÷')
+            .split("-")
+            .lastOrNull()
+            ?.toDoubleOrNull() ?: return // return early if input is invalid
+
+        val currentDifference = performArithmeticOperation(
+            num1 = state.result,
+            num2 = lastNumber,
+            operation = CalculatorOperation.Subtract
+        )
+
+        _calculatorState.update { currentState ->
+            currentState.copy(
+                expression = "$currentDifference-",
+                result = currentDifference
+            )
         }
-        sum?.let {
-            _calculatorState.update { result ->
-                result.copy(
-                    result = it
-                )
-            }
+
+    }
+
+
+    private fun divide() {
+        val state = _calculatorState.value
+
+        val lastNumber = state.expression
+            .trimEnd('+', '-', '×', '÷')
+            .split("÷")
+            .lastOrNull()
+            ?.toDoubleOrNull() ?: return // return early if input is invalid
+
+        val currentDividend = performArithmeticOperation(
+            num1 = state.result,
+            num2 = lastNumber,
+            operation = CalculatorOperation.Divide
+        )
+
+        _calculatorState.update { currentState ->
+            currentState.copy(
+                expression = "$currentDividend÷",
+                result = currentDividend
+            )
         }
     }
 
 
-    private fun subtract(numbers: List<Number>) {
-        val difference =
-            performArithmeticOperation(numbers) { num1, num2 -> num1.toDouble() - num2.toDouble() }
+    private fun multiply() {
+        val state = _calculatorState.value
 
-        difference?.let {
-            _calculatorState.update { result ->
-                result.copy(
-                    result = it
-                )
-            }
-        }
-    }
+        val lastNumber = state.expression
+            .trimEnd('+', '-', '×', '÷')
+            .split("×")
+            .lastOrNull()
+            ?.toDoubleOrNull() ?: return // return early if input is invalid
 
+        val currentProduct = performArithmeticOperation(
+            num1 = state.result,
+            num2 = lastNumber,
+            operation = CalculatorOperation.Multiply
+        )
 
-    private fun divide(numbers: List<Number>) {
-        val dividend =
-            performArithmeticOperation(numbers) { num1, num2 -> num1.toDouble() / num2.toDouble() }
-
-        dividend?.let {
-            _calculatorState.update { result ->
-                result.copy(
-                    result = it
-                )
-            }
-        }
-    }
-
-
-    private fun multiply(numbers: List<Number>) {
-        val product =
-            performArithmeticOperation(numbers) { num1, num2 -> num1.toDouble() * num2.toDouble() }
-
-        product?.let {
-            _calculatorState.update { result ->
-                result.copy(
-                    result = it
-                )
-            }
+        _calculatorState.update { currentState ->
+            currentState.copy(
+                expression = "$currentProduct×",
+                result = currentProduct
+            )
         }
     }
 
     private fun performArithmeticOperation(
-        numbers: List<Number>?,
-        operation: (Number, Number) -> Number
-    ): Number? {
-        if (numbers.isNullOrEmpty()) return null
-        /*
-        * Perform operation treating all numbers as their native types
-        * */
-        return numbers.reduce { acc, number ->
-            operation(acc, number)
+        num1: Number,
+        num2: Number,
+        operation: CalculatorOperation
+    ): Number {
+        return when (operation) {
+            is CalculatorOperation.Add -> {
+                num1.toDouble() + num2.toDouble()
+            }
+
+            is CalculatorOperation.Subtract -> {
+                num1.toDouble() - num2.toDouble()
+            }
+
+            is CalculatorOperation.Divide -> {
+                num1.toDouble() / num2.toDouble()
+            }
+
+            is CalculatorOperation.Multiply -> {
+                num1.toDouble() * num2.toDouble()
+            }
+
         }
     }
 
