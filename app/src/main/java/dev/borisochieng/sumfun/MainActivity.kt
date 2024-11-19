@@ -357,7 +357,7 @@ fun MainScreenLayout(
                     symbol = "=",
                     onClick = {
                         //TODO show total
-                        //viewModel.listenForUiEvents(CalculatorEvents.EnterDecimal)
+                        viewModel.listenForUiEvents(CalculatorEvents.CalculateResult)
                     },
                     modifier = Modifier
                         .weight(2f),

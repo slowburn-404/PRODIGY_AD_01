@@ -18,4 +18,6 @@ sealed class CalculatorEvents {
 
     data object Delete: CalculatorEvents()
 
+    data object CalculateResult: CalculatorEvents()
+
 }
