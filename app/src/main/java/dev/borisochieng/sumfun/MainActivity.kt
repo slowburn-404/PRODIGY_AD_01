@@ -17,11 +17,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonColors
+import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.ui.Alignment
@@ -40,6 +45,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.borisochieng.sumfun.ui.theme.SumFunTheme
 
 class MainActivity : ComponentActivity() {
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -51,8 +57,17 @@ class MainActivity : ComponentActivity() {
 
                 Scaffold(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.LightGray)
+                        .fillMaxSize(),
+                    topBar = {
+                        MediumTopAppBar(
+                            title = {
+                                Text(
+                                    text = "Calculator",
+                                    style = MaterialTheme.typography.displaySmall
+                                )
+                            }
+                        )
+                    }
                 ) { innerPadding ->
                     MainScreenLayout(
                         modifier = Modifier
@@ -90,12 +105,8 @@ fun MainScreenLayout(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
                 text = state.value.expression,
-                style = TextStyle(
-                    color = Color.LightGray,
-                    fontWeight = FontWeight.Medium,
-                    textAlign = TextAlign.End,
-                    fontSize = 24.sp
-                ),
+                style = MaterialTheme.typography.titleLarge,
+                textAlign = TextAlign.End,
                 maxLines = 2,
             )
 
@@ -104,12 +115,9 @@ fun MainScreenLayout(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
                 text = "= ${state.value.result}",
-                style = TextStyle(
-                    color = Color.Black,
-                    fontWeight = FontWeight.Black,
-                    textAlign = TextAlign.End,
-                    fontSize = 36.sp
-                ),
+                style = MaterialTheme.typography.displayMedium,
+                textAlign = TextAlign.End,
+                fontWeight = FontWeight.SemiBold,
                 maxLines = 2
             )
             Row(
@@ -123,7 +131,7 @@ fun MainScreenLayout(
                     },
                     modifier = Modifier
                         .weight(2f),
-                    color = Color.Yellow
+                    color = MaterialTheme.colorScheme.primaryContainer
                 )
 
 
@@ -135,8 +143,8 @@ fun MainScreenLayout(
                         viewModel.listenForUiEvents(CalculatorEvents.Delete)
                     },
                     colors = IconButtonColors(
-                        contentColor = Color.Black,
-                        containerColor = Color.Yellow,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
                         disabledContentColor = Color.LightGray,
                         disabledContainerColor = Color.LightGray
                     )
@@ -157,8 +165,8 @@ fun MainScreenLayout(
                         viewModel.listenForUiEvents(CalculatorEvents.Multiply)
                     },
                     colors = IconButtonColors(
-                        contentColor = Color.Black,
-                        containerColor = Color.White,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
                         disabledContentColor = Color.LightGray,
                         disabledContainerColor = Color.LightGray
                     )
@@ -210,8 +218,8 @@ fun MainScreenLayout(
                         viewModel.listenForUiEvents(CalculatorEvents.Divide)
                     },
                     colors = IconButtonColors(
-                        contentColor = Color.Black,
-                        containerColor = Color.White,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
                         disabledContentColor = Color.LightGray,
                         disabledContainerColor = Color.LightGray
                     )
@@ -263,8 +271,8 @@ fun MainScreenLayout(
                         viewModel.listenForUiEvents(CalculatorEvents.Subtract)
                     },
                     colors = IconButtonColors(
-                        contentColor = Color.Black,
-                        containerColor = Color.White,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
                         disabledContentColor = Color.LightGray,
                         disabledContainerColor = Color.LightGray
                     )
@@ -315,8 +323,8 @@ fun MainScreenLayout(
                         viewModel.listenForUiEvents(CalculatorEvents.Add)
                     },
                     colors = IconButtonColors(
-                        contentColor = Color.Black,
-                        containerColor = Color.White,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
                         disabledContentColor = Color.LightGray,
                         disabledContainerColor = Color.LightGray
                     )
@@ -361,7 +369,7 @@ fun MainScreenLayout(
                     },
                     modifier = Modifier
                         .weight(2f),
-                    color = Color.Yellow
+                    color = MaterialTheme.colorScheme.primaryContainer
                 )
 
             }

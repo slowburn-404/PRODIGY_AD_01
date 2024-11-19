@@ -6,15 +6,11 @@ import dev.borisochieng.sumfun.OperationExtensions.add
 import dev.borisochieng.sumfun.OperationExtensions.divide
 import dev.borisochieng.sumfun.OperationExtensions.multiply
 import dev.borisochieng.sumfun.OperationExtensions.subtract
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.xml.xpath.XPathExpression
 import kotlin.math.exp
 
 class MainActivityViewModel : ViewModel() {
@@ -23,10 +19,6 @@ class MainActivityViewModel : ViewModel() {
         MutableStateFlow(CalculatorState())
     val calculatorState: StateFlow<CalculatorState> =
         _calculatorState.asStateFlow() //expose as read only
-
-    private val _calculatorEvents: MutableSharedFlow<CalculatorEvents> = MutableSharedFlow()
-    val calculatorEvents: SharedFlow<CalculatorEvents> =
-        _calculatorEvents.asSharedFlow() //expose as read only
 
     fun listenForUiEvents(calculatorEvent: CalculatorEvents) =
         viewModelScope.launch {
@@ -40,8 +32,21 @@ class MainActivityViewModel : ViewModel() {
                 is CalculatorEvents.Clear -> clear()
                 is CalculatorEvents.Delete -> delete()
                 is CalculatorEvents.CalculateResult -> {
-                    val currentState = _calculatorState.value
-                    doArithmeticOperation(currentState.expression)
+                    _calculatorState.update { currentState ->
+                        if (currentState.expression.endsWithOperator()) return@update currentState
+
+                        val result = calculateResult(currentState.expression)
+
+                        if (result.isNaN()) {
+                            return@update currentState.copy(
+                                expression = ERROR_DIVIDE_BY_ZERO
+                            )
+                        } else {
+                            currentState.copy(
+                                result = result
+                            )
+                        }
+                    }
                 }
 
             }
@@ -68,10 +73,10 @@ class MainActivityViewModel : ViewModel() {
 
     private fun enterNumber(digit: Int) {
         _calculatorState.update { state ->
-            val updatedInput = state.expression + digit.toString()
+            val updatedExpression = state.expression + digit.toString()
 
             state.copy(
-                expression = updatedInput
+                expression = updatedExpression
             )
         }
     }
@@ -90,57 +95,44 @@ class MainActivityViewModel : ViewModel() {
 
     private fun enterOperator(operator: String) {
         _calculatorState.update { currentState ->
-            val lastChar = currentState.expression.lastOrNull()
-            if (lastChar != null && OPERATORS.contains(lastChar.toString())) return@update currentState
+            if (currentState.expression.endsWithOperator()) return@update currentState
 
-            currentState.copy(
-                expression = currentState.expression + operator
-            )
-        }
-    }
+            val updatedExpression = if (currentState.expression.containsOperator()) {
+                val result = calculateResult(currentState.expression)
 
-    private fun doArithmeticOperation(expression: String) {
-        when {
-            expression.contains('+') -> calculateResult(CalculatorOperation.Add)
-            expression.contains('-') -> calculateResult(CalculatorOperation.Subtract)
-            expression.contains('×') -> calculateResult(CalculatorOperation.Multiply)
-            expression.contains('÷') -> calculateResult(CalculatorOperation.Divide)
-
-        }
-    }
-
-    private fun calculateResult(operation: CalculatorOperation) {
-
-        _calculatorState.update { currentState ->
-
-            val numbers = removeOperationSign(currentState.expression)
-                .map { it.toDoubleOrNull() ?: 0.0 }
-
-            if (numbers.size < 2) return@update currentState
-
-            val result = when (operation) {
-                is CalculatorOperation.Add -> numbers[0].add(numbers[1])
-
-                is CalculatorOperation.Subtract -> numbers[0].subtract(numbers[1])
-
-                is CalculatorOperation.Divide -> {
-                    if (numbers[1] == 0.0) {
-                        return@update currentState.copy(
-                            expression = ERROR_DIVIDE_BY_ZERO
-                        )
-                    } else {
-                        numbers[0].divide(numbers[1])
-                    }
-                }
-
-                is CalculatorOperation.Multiply -> numbers[0].multiply(numbers[1])
+                return@update currentState.copy(
+                    expression = "$result$operator",
+                    result = result
+                )
+            } else {
+                currentState.expression + operator
             }
 
             currentState.copy(
-                result = result
+                expression = updatedExpression,
             )
         }
+    }
 
+    private fun calculateResult(expression: String): Double {
+        val numbers = removeOperationSign(expression)
+            .map { it.toDoubleOrNull() ?: 0.0 }
+
+        if (numbers.size < 2) return Double.NaN
+
+        return when {
+            expression.contains(ADD_SYMBOL) -> numbers[0].add(numbers[1])
+
+            expression.contains(SUBTRACT_SYMBOL) -> numbers[0].subtract(numbers[1])
+
+            expression.contains(DIVIDE_SYMBOL) -> {
+                if (numbers[1] == 0.0) Double.NaN else numbers[0].divide(numbers[1])
+            }
+
+            expression.contains(MULTIPLY_SYMBOL) -> numbers[0].multiply(numbers[1])
+
+            else -> Double.NaN
+        }
 
     }
 
@@ -149,6 +141,20 @@ class MainActivityViewModel : ViewModel() {
             .filter {
                 it.isNotBlank()
             }
+    }
+
+    //avoid expressions like 3+3+3 and only allow 3+3
+    private fun String.containsOperator(): Boolean {
+        return this.contains('+') ||
+                this.contains('-') ||
+                this.contains('×') ||
+                this.contains('÷')
+    }
+
+    private fun String.endsWithOperator(): Boolean {
+        val lastChar = this.lastOrNull() ?: return false
+
+        return OPERATORS.contains(lastChar.toString())
     }
 
     companion object {

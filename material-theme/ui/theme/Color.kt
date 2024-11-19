@@ -1,4 +1,4 @@
-package dev.borisochieng.sumfun.ui.theme
+package com.example.compose
 import androidx.compose.ui.graphics.Color
 
 val primaryLight = Color(0xFF626200)

@@ -1,6 +1,5 @@
 package dev.borisochieng.sumfun
 
-import dev.borisochieng.sumfun.data.getNumbers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -12,14 +11,12 @@ import org.junit.Assert.*
 import org.junit.Before
 
 /**
- * Example local unit test, which will execute on the development machine (host).
+ * Test arithmetic operations functionality in the MainActivityViewModel
  *
- * See [testing documentation](http://d.android.com/tools/testing).
  */
 class MainActivityViewModelTest {
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var viewModel: MainActivityViewModel
-    private val numbers = getNumbers()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Before
@@ -57,7 +54,7 @@ class MainActivityViewModelTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun mainActivityViewModel_Subtraction_isCorrect_DifferenceUpdatedErrorFlagUnset() =
+    internal fun mainActivityViewModel_Subtraction_isCorrect_DifferenceUpdatedErrorFlagUnset() =
         runTest(testDispatcher) {
             viewModel.listenForUiEvents(CalculatorEvents.EnterNumber(1))
 
@@ -88,7 +85,7 @@ class MainActivityViewModelTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun mainActivityViewModel_Multiplication_isCorrect_ProductUpdatedErrorFlagUnset() =
+    internal fun mainActivityViewModel_Multiplication_isCorrect_ProductUpdatedErrorFlagUnset() =
         runTest(testDispatcher) {
             viewModel.listenForUiEvents(CalculatorEvents.EnterNumber(1))
             
@@ -115,7 +112,7 @@ class MainActivityViewModelTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun mainActivityViewModel_Division_isCorrect_DividendUpdatedErrorFlagUnset() =
+    internal fun mainActivityViewModel_Division_isCorrect_DividendUpdatedErrorFlagUnset() =
         runTest(testDispatcher) {
             viewModel.listenForUiEvents(CalculatorEvents.EnterNumber(5))
             viewModel.listenForUiEvents(CalculatorEvents.Divide)
@@ -127,6 +124,23 @@ class MainActivityViewModelTest {
 
             assertEquals(2.5, viewModel.calculatorState.value.result)
 
+        }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    internal fun mainActivityViewModel_UpdateExpressionOnThirdNumber() =
+        runTest(testDispatcher) {
+            viewModel.listenForUiEvents(CalculatorEvents.EnterNumber(5))
+            viewModel.listenForUiEvents(CalculatorEvents.Add)
+            viewModel.listenForUiEvents(CalculatorEvents.EnterNumber(3))
+            viewModel.listenForUiEvents(CalculatorEvents.Multiply)
+            viewModel.listenForUiEvents(CalculatorEvents.EnterNumber(6))
+            viewModel.listenForUiEvents(CalculatorEvents.CalculateResult)
+
+            advanceUntilIdle()
+
+            assertEquals("8.0×6", viewModel.calculatorState.value.expression)
+            assertEquals(48.0, viewModel.calculatorState.value.result)
         }
 
 }
