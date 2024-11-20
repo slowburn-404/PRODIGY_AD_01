@@ -107,7 +107,7 @@ class MainActivityViewModelTest {
 
             //assert that multiplication is correct
 
-            assertEquals(100.0, viewModel.calculatorState.value.result)
+            assertEquals(100, viewModel.calculatorState.value.result)
         }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -139,8 +139,8 @@ class MainActivityViewModelTest {
 
             advanceUntilIdle()
 
-            assertEquals("8.0×6", viewModel.calculatorState.value.expression)
-            assertEquals(48.0, viewModel.calculatorState.value.result)
+            assertEquals("8×6", viewModel.calculatorState.value.expression)
+            assertEquals(48, viewModel.calculatorState.value.result)
         }
 
 }

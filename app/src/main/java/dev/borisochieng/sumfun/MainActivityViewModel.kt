@@ -43,7 +43,7 @@ class MainActivityViewModel : ViewModel() {
                             )
                         } else {
                             currentState.copy(
-                                result = result
+                                result = formatNumber(result)
                             )
                         }
                     }
@@ -99,10 +99,11 @@ class MainActivityViewModel : ViewModel() {
 
             val updatedExpression = if (currentState.expression.containsOperator()) {
                 val result = calculateResult(currentState.expression)
+                val formattedResult= formatNumber(result)
 
                 return@update currentState.copy(
-                    expression = "$result$operator",
-                    result = result
+                    expression = "$formattedResult$operator",
+                    result = formattedResult
                 )
             } else {
                 currentState.expression + operator
@@ -141,6 +142,14 @@ class MainActivityViewModel : ViewModel() {
             .filter {
                 it.isNotBlank()
             }
+    }
+
+    private fun formatNumber(number: Double): Number {
+        return if (number % 1.0 == 0.0) {
+            number.toInt()
+        } else {
+            number
+        }
     }
 
     //avoid expressions like 3+3+3 and only allow 3+3

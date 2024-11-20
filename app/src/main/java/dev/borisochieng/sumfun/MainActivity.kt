@@ -131,7 +131,8 @@ fun MainScreenLayout(
                     },
                     modifier = Modifier
                         .weight(2f),
-                    color = MaterialTheme.colorScheme.primaryContainer
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    textColor = MaterialTheme.colorScheme.onPrimaryContainer
                 )
 
 
@@ -369,7 +370,8 @@ fun MainScreenLayout(
                     },
                     modifier = Modifier
                         .weight(2f),
-                    color = MaterialTheme.colorScheme.primaryContainer
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    textColor = MaterialTheme.colorScheme.onPrimaryContainer
                 )
 
             }
